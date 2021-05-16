@@ -13,12 +13,13 @@
         position: 'absolute',
         top: '0px',
         width: '100%',
-        height: `${gifts.length ? '36px' : '0px'}`,
+        height: `${giftLabels.length ? '36px' : '0px'}`,
       }">
       <div class="gift-show-content-wrapper" id="gift-show-content-wrapper">
         <transition-group name="fade">
-          <template v-for="gift in gifts" :key="gift.id">
-            <div @mouseenter="hoverGift(gift.id)" @mouseleave="unhoverGift(gift.id)" class="gift-show-wrapper">
+          <template v-for="gift in giftLabels">
+            <!-- eslint-disable-next-line -->
+            <div :key="gift.id" @mouseenter="hoverGift(gift.id)" @mouseleave="unhoverGift(gift.id)" class="gift-show-wrapper">
               <!-- <transition name="fade"> -->
               <div :key="`${gift.id}_normal`" v-if="!giftHover.includes(gift.id)" class="gift-show-content" :style="{ background: gift.priceProperties.backgroundColor }">
                 <div :style="{
@@ -166,23 +167,21 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
-import { difference } from "lodash";
-// const win = require("electron").remote.getCurrentWindow();
-
 import {
   DEFAULT_AVATAR,
   INTERACT_TYPE,
   GUARD_ICON_MAP,
-  GIFT_CONFIG_MAP,
-} from "../../service/const";
-import { getPriceProperties } from "../../service/util";
+} from "../service/const";
+import { getPriceProperties } from "../service/util";
 import SimilarCommentBadge from "./SimilarCommentBadge";
 import GiftCard from "./GiftCard";
 import GiftCardMini from "./GiftCardMini";
 import FanMedal from "./FanMedal";
+import { getSetting, getGiftConfig } from '../service/api'
 
-export default defineComponent({
+const WS_URL = 'ws://127.0.0.1:3000'
+
+export default {
   components: {
     SimilarCommentBadge,
     GiftCard,
@@ -194,137 +193,161 @@ export default defineComponent({
     return {
       giftHover: [],
       DEFAULT_AVATAR,
-      giftGifMap: {}
+      giftGifMap: {},
+      giftLabels: [],
+      showGiftCardThreshold: 0,
+      showGiftLabelThreshold: 0, // 顶部礼物条
+      isShowMemberShipIcon: true,
+      isShowFanMedal: true,
+      isShowAvatar: true,
+      isUseMiniGiftCard: false,
+      danmakuFont: 'auto',
+      avatarSizeStyle: {
+        width: `12px`,
+        height: `12px`,
+        "line-height": `12px`,
+      },
+      messages: [],
+      "0_message": {},
+      "0_name": {
+      },
+      "0_comment": {
+      },
+
+      "3_message": {
+      },
+      "3_name": {
+      },
+      "3_comment": {
+      },
+
+      // 提督和总督暂时使用舰长配置
+      "2_message": {
+      },
+      "2_name": {
+      },
+      "2_comment": {
+      },
+
+      "1_message": {
+      },
+      "1_name": {
+      },
+      "1_comment": {
+      },
     };
   },
-  watch: {
-    gifts: function (newGifts, oldGifts) {
-      const newIds = difference(
-        newGifts.map((gift) => gift.id),
-        oldGifts.map((gift) => gift.id)
-      );
-      if (!newIds.length) return;
-      this.giftHover = [...this.giftHover, ...newIds];
-      newIds.forEach((newId) => {
-        setTimeout(() => {
-          this.giftHover = this.giftHover.filter((id) => id !== newId);
-        }, 5000);
-      });
-    },
-  },
   computed: {
-    isAlwaysOnTop() {
-      return this.$store.state.Config.isAlwaysOnTop;
-    },
-    showGiftCardThreshold() {
-      return this.$store.state.Config.showGiftCardThreshold;
-    },
-    isShowMemberShipIcon() {
-      return this.$store.state.Config.isShowMemberShipIcon;
-    },
-    isShowFanMedal() {
-      return this.$store.state.Config.isShowFanMedal;
-    },
-    isShowAvatar() {
-      return this.$store.state.Config.isShowAvatar;
-    },
-    isUseMiniGiftCard() {
-      return this.$store.state.Config.isUseMiniGiftCard;
-    },
-    danmakuFont() {
-      return this.$store.state.Config.danmakuFont || "auto";
-    },
-    avatarSizeStyle() {
-      const avatarSize = this.$store.state.Config.avatarSize;
-      return {
-        width: `${avatarSize}px`,
-        height: `${avatarSize}px`,
-        "line-height": `${avatarSize}px`,
-      };
-    },
-    windowOpacity() {
-      return this.$store.state.Config.windowOpacity;
-    },
-
-    messages() {
-      const messages = this.isPreview
-        ? this.$store.state.Message.exampleMessages
-        : this.$store.state.Message.messages;
-      return messages
-        .filter((message) => {
-          return (
-            !message.totalPrice ||
-            message.totalPrice > this.showGiftCardThreshold
-          );
-        })
-        .map((message) => {
-          return Object.assign({}, message, {
-            priceProperties: getPriceProperties(message.totalPrice) || {},
-          });
-        })
-        .reverse();
-    },
-
-    gifts() {
-      const gifts = this.isPreview
-        ? this.$store.state.Message.exampleGifts
-        : this.$store.state.Message.gifts;
-      return gifts
-        .map((gift) => {
-          return Object.assign({}, gift, {
-            priceProperties: getPriceProperties(gift.totalPrice) || {},
-          });
-        })
-        .reverse();
-
-      // TODO: 清理时间到达消失的GIFT
-    },
-
-    "0_message"() {
-      return this.$store.state.Config["0_message"];
-    },
-    "0_name"() {
-      return this.$store.state.Config["0_name"];
-    },
-    "0_comment"() {
-      return this.$store.state.Config["0_comment"];
-    },
-
-    "3_message"() {
-      return this.$store.state.Config["3_message"];
-    },
-    "3_name"() {
-      return this.$store.state.Config["3_name"];
-    },
-    "3_comment"() {
-      return this.$store.state.Config["3_comment"];
-    },
-
-    // 提督和总督暂时使用舰长配置
-    "2_message"() {
-      return this.$store.state.Config["3_message"];
-    },
-    "2_name"() {
-      return this.$store.state.Config["3_name"];
-    },
-    "2_comment"() {
-      return this.$store.state.Config["3_comment"];
-    },
-
-    "1_message"() {
-      return this.$store.state.Config["3_message"];
-    },
-    "1_name"() {
-      return this.$store.state.Config["3_name"];
-    },
-    "1_comment"() {
-      return this.$store.state.Config["3_comment"];
-    },
   },
-  mounted() {
-    this.giftGifMap = GIFT_CONFIG_MAP
+  async mounted() {
+    this.giftGifMap = await getGiftConfig()
+    this.init()
+
+    const ws = new WebSocket(WS_URL)
+
+    ws.onopen = () => {
+
+    }
+
+    ws.onmessage = (msg) => {
+      const payload = JSON.parse(msg.data)
+
+      if (payload.cmd === 'MERGE_SETTING') {
+        this.onSetting(payload.payload)
+      }
+      if (payload.cmd === 'COMMENT') {
+        this.onComment(payload.payload)
+      }
+      if (payload.cmd === 'GIFT') {
+        this.onGift(payload.payload)
+      }
+      if (payload.cmd === 'INTERACT') {
+        this.onInteract(payload.payload)
+      }
+    }
+
+    ws.onclose = (code) => {
+      console.log('ws close: ', code)
+    }
+
+    ws.onerror = (err) => {
+      console.error(err)
+    }
   },
   methods: {
+    onSetting(payload) {
+      console.log(payload)
+      for (const key in payload) {
+        this[key] = payload[key]
+      }
+    },
+    // TODO: 改成数组
+    onComment(comment) {
+      // if (payload)
+      comment.id = comment._id
+      comment.type = 'comment'
+      if (this.messages.length > 100) {
+        this.messages.pop()
+        this.messages = [comment, ...this.messages]
+      } else {
+        this.messages = [comment, ...this.messages]
+      }
+    },
+    onGift(gift) {
+      gift.id = gift._id
+      gift.type = 'gift'
+      gift.totalPrice = gift.price * gift.giftNumber
+      if (!gift.totalPrice || gift.totalPrice > this.showGiftCardThreshold) {
+        Object.assign(gift, {
+          priceProperties: getPriceProperties(gift.totalPrice) || {},
+        });
+
+        // 已存在的礼物覆盖，不存在的新增
+        const existGift = this.messages.find(msg => msg.id === gift.id)
+        if (existGift) {
+          existGift.giftNumber = gift.giftNumber
+          existGift.totalPrice = gift.price * gift.giftNumber
+        } else {
+          if (this.messages.length > 100) {
+            this.messages.pop()
+            this.messages = [gift, ...this.messages]
+          } else {
+            this.messages = [gift, ...this.messages]
+          }
+        }
+      }
+
+      // 添加到礼物栏
+      if (gift.totalPrice > this.showGiftLabelThreshold) {
+        const giftLabel = Object.assign({
+          giftHover: true
+        }, gift)
+        setTimeout(() => {
+          giftLabel.giftHover = false
+        }, 5000);
+        this.giftLabels = [giftLabel, ...this.giftLabels]
+      }
+    },
+    onInteract(interact) {
+      interact.id = interact._id
+      interact.type = 'interactWord'
+
+      if (this.messages.length > 100) {
+        this.messages.pop()
+        this.messages = [interact, ...this.messages]
+      } else {
+        this.messages = [interact, ...this.messages]
+      }
+    },
+
+    async init() {
+      const settings = await getSetting()
+      console.log(settings)
+      for (const key in settings) {
+        this[key] = settings[key]
+      }
+    },
+
     getMessageStyleByRole(message) {
       return this[`${message.role}_message`];
     },
@@ -370,7 +393,7 @@ export default defineComponent({
       return GUARD_ICON_MAP[level];
     },
   },
-})
+}
 </script>
 
 <style scoped>

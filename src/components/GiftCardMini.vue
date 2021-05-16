@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { dateFormat } from "../../service/util";
+import { dateFormat } from "../service/util";
 
 export default {
   props: [

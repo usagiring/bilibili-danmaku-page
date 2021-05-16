@@ -1,6 +1,6 @@
 export const DEFAULT_AVATAR = 'https://static.hdslb.com/images/member/noface.gif'
 
-export const PRICE_PROPERTIES = OPTION_CONFIG.PRICE_PROPERTIES || {
+export const PRICE_PROPERTIES = {
   1: {
     backgroundColor: "#EDF5FF",
     backgroundPriceColor: "#7497CD",
@@ -67,6 +67,6 @@ export const ENTER_ROOM_TYPE = {
   2: '光临'
 }
 
-export const COLORS = OPTION_CONFIG.COLORS || ['crimson', 'darkorange', 'moccasin', 'forestgreen', 'darkcyan', 'dodgerblue', 'violet']
+export const COLORS = ['crimson', 'darkorange', 'moccasin', 'forestgreen', 'darkcyan', 'dodgerblue', 'violet']
 
 // export const GIFT_CONFIG_MAP = JSON.parse(fs.readFileSync(`gift_config`, 'utf8'))

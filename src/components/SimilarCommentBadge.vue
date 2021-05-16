@@ -5,12 +5,11 @@
 </template>
 
 <script>
-import { defineComponent } from "vue";
 import { shuffle } from "lodash";
-import { COLORS } from "../../service/const";
+import { COLORS } from "../service/const";
 const colorPool = shuffle(COLORS);
 
-export default defineComponent({
+export default {
   props: ["number"],
   data() {
     return {
@@ -32,7 +31,7 @@ export default defineComponent({
     //   }, 500);
     // },
   },
-})
+}
 </script>
 
 <style scoped>
