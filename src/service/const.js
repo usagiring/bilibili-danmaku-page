@@ -68,5 +68,5 @@ export const ENTER_ROOM_TYPE = {
 }
 
 export const COLORS = ['crimson', 'darkorange', 'moccasin', 'forestgreen', 'darkcyan', 'dodgerblue', 'violet']
-
+export const MAX_MESSAGE = 150
 // export const GIFT_CONFIG_MAP = JSON.parse(fs.readFileSync(`gift_config`, 'utf8'))

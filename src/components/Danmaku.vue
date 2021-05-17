@@ -171,6 +171,7 @@ import {
   DEFAULT_AVATAR,
   INTERACT_TYPE,
   GUARD_ICON_MAP,
+  MAX_MESSAGE
 } from "../service/const";
 import { getPriceProperties } from "../service/util";
 import SimilarCommentBadge from "./SimilarCommentBadge";
@@ -178,8 +179,6 @@ import GiftCard from "./GiftCard";
 import GiftCardMini from "./GiftCardMini";
 import FanMedal from "./FanMedal";
 import { getSetting, getGiftConfig } from '../service/api'
-
-const WS_URL = 'ws://127.0.0.1:3000'
 
 export default {
   components: {
@@ -243,16 +242,15 @@ export default {
     this.giftGifMap = await getGiftConfig()
     this.init()
 
+    // PORT 来自 api/settings
+    const WS_URL = `ws://127.0.0.1:${this.PORT}`
     const ws = new WebSocket(WS_URL)
-
-    ws.onopen = () => {
-
-    }
+    ws.onopen = () => {}
 
     ws.onmessage = (msg) => {
       const payload = JSON.parse(msg.data)
 
-      if (payload.cmd === 'MERGE_SETTING') {
+      if (payload.cmd === 'SETTING') {
         this.onSetting(payload.payload)
       }
       if (payload.cmd === 'COMMENT') {
@@ -263,6 +261,9 @@ export default {
       }
       if (payload.cmd === 'INTERACT') {
         this.onInteract(payload.payload)
+      }
+      if (payload.cmd === 'SUPER_CHAT') {
+        this.onSuperChat(payload.payload)
       }
     }
 
@@ -286,7 +287,10 @@ export default {
       // if (payload)
       comment.id = comment._id
       comment.type = 'comment'
-      if (this.messages.length > 100) {
+      comment.avatar = comment.avatar ? `${comment.avatar}@48w_48h` : DEFAULT_AVATAR
+      comment.role = comment.guard
+
+      if (this.messages.length > MAX_MESSAGE) {
         this.messages.pop()
         this.messages = [comment, ...this.messages]
       } else {
@@ -296,7 +300,11 @@ export default {
     onGift(gift) {
       gift.id = gift._id
       gift.type = 'gift'
+      gift.avatar = gift.avatar ? `${gift.avatar}@48w_48h` : DEFAULT_AVATAR
+      gift.sendAt = Date.now()
+      // 
       gift.totalPrice = gift.price * gift.giftNumber
+
       if (!gift.totalPrice || gift.totalPrice > this.showGiftCardThreshold) {
         Object.assign(gift, {
           priceProperties: getPriceProperties(gift.totalPrice) || {},
@@ -308,7 +316,7 @@ export default {
           existGift.giftNumber = gift.giftNumber
           existGift.totalPrice = gift.price * gift.giftNumber
         } else {
-          if (this.messages.length > 100) {
+          if (this.messages.length > MAX_MESSAGE) {
             this.messages.pop()
             this.messages = [gift, ...this.messages]
           } else {
@@ -316,27 +324,47 @@ export default {
           }
         }
       }
-
-      // 添加到礼物栏
-      if (gift.totalPrice > this.showGiftLabelThreshold) {
-        const giftLabel = Object.assign({
-          giftHover: true
-        }, gift)
-        setTimeout(() => {
-          giftLabel.giftHover = false
-        }, 5000);
-        this.giftLabels = [giftLabel, ...this.giftLabels]
-      }
+      this.addToHeadline(gift)
     },
     onInteract(interact) {
       interact.id = interact._id
       interact.type = 'interactWord'
+      interact.color = interact.nameColor
+      interact.sendAt = interact.timestamp
 
-      if (this.messages.length > 100) {
+      if (this.messages.length > MAX_MESSAGE) {
         this.messages.pop()
         this.messages = [interact, ...this.messages]
       } else {
         this.messages = [interact, ...this.messages]
+      }
+    },
+    onSuperChat(superChat) {
+      superChat.id = superChat._id
+      superChat.type = 'superChat'
+      superChat.avatar = superChat.avatar ? `${superChat.avatar}@48w_48h` : DEFAULT_AVATAR
+      superChat.sendAt = Date.now()
+
+      if (this.messages.length > MAX_MESSAGE) {
+        this.messages.pop()
+        this.messages = [superChat, ...this.messages]
+      } else {
+        this.messages = [superChat, ...this.messages]
+      }
+    },
+
+    // 添加到礼物栏
+    addToHeadline(item) {
+      if (item.totalPrice > this.showGiftLabelThreshold) {
+        const item = Object.assign({
+          giftHover: true
+        }, item)
+
+        // 新加入高亮显示5s
+        setTimeout(() => {
+          item.giftHover = false
+        }, 5000);
+        this.headlines = [item, ...this.headlines]
       }
     },
 
