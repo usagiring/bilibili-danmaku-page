@@ -193,9 +193,10 @@ export default {
       giftHover: [],
       DEFAULT_AVATAR,
       giftGifMap: {},
-      giftLabels: [],
+      headlines: [],
       showGiftCardThreshold: 0,
-      showGiftLabelThreshold: 0, // 顶部礼物条
+      combineSimilarTime: 3000,
+      showHeadlineThreshold: 0, // 顶部礼物条
       isShowMemberShipIcon: true,
       isShowFanMedal: true,
       isShowAvatar: true,
@@ -206,46 +207,49 @@ export default {
         height: `12px`,
         "line-height": `12px`,
       },
+      isExample: false,
       messages: [],
-      "0_message": {},
-      "0_name": {
+      message_lv0: {},
+      name_lv0: {
       },
-      "0_comment": {
+      comment_lv0: {
       },
 
-      "3_message": {
+      message_lv3: {
       },
-      "3_name": {
+      name_lv3: {
       },
-      "3_comment": {
+      comment_lv3: {
       },
 
       // 提督和总督暂时使用舰长配置
-      "2_message": {
+      message_lv2: {
       },
-      "2_name": {
+      name_lv2: {
       },
-      "2_comment": {
+      comment_lv2: {
       },
 
-      "1_message": {
+      message_lv1: {
       },
-      "1_name": {
+      name_lv1: {
       },
-      "1_comment": {
+      comment_lv1: {
       },
     };
   },
   computed: {
   },
   async mounted() {
+    const params = URLSearchParams(window.location.search)
+    this.isExample = params.get('example') || false
     this.giftGifMap = await getGiftConfig()
     this.init()
 
     // PORT 来自 api/settings
     const WS_URL = `ws://127.0.0.1:${this.PORT}`
     const ws = new WebSocket(WS_URL)
-    ws.onopen = () => {}
+    ws.onopen = () => { }
 
     ws.onmessage = (msg) => {
       const payload = JSON.parse(msg.data)
@@ -253,16 +257,16 @@ export default {
       if (payload.cmd === 'SETTING') {
         this.onSetting(payload.payload)
       }
-      if (payload.cmd === 'COMMENT') {
+      if (payload.cmd === this.isExample ? 'EXAMPLE_COMMENT' : 'COMMENT') {
         this.onComment(payload.payload)
       }
-      if (payload.cmd === 'GIFT') {
+      if (payload.cmd === this.isExample ? 'EXAMPLE_GIFT' : 'GIFT') {
         this.onGift(payload.payload)
       }
-      if (payload.cmd === 'INTERACT') {
+      if (payload.cmd === this.isExample ? 'EXAMPLE_INTERACT' : 'INTERACT') {
         this.onInteract(payload.payload)
       }
-      if (payload.cmd === 'SUPER_CHAT') {
+      if (payload.cmd === this.isExample ? 'EXAMPLE_SUPER_CHAT' : 'SUPER_CHAT') {
         this.onSuperChat(payload.payload)
       }
     }
@@ -355,7 +359,7 @@ export default {
 
     // 添加到礼物栏
     addToHeadline(item) {
-      if (item.totalPrice > this.showGiftLabelThreshold) {
+      if (item.totalPrice > this.showHeadlineThreshold) {
         const item = Object.assign({
           giftHover: true
         }, item)
@@ -377,13 +381,13 @@ export default {
     },
 
     getMessageStyleByRole(message) {
-      return this[`${message.role}_message`];
+      return this[`message_lv${message.role}`];
     },
     getNameStyleByRole(message) {
-      return this[`${message.role}_name`];
+      return this[`name_lv${message.role}`];
     },
     getCommentStyleByRole(message) {
-      return this[`${message.role}_comment`];
+      return this[`comment_${message.role}`];
     },
 
     parseMsgType(msgType) {
