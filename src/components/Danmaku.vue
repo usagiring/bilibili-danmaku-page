@@ -6,18 +6,18 @@
       left: '4px',
       right: '4px',
       '-webkit-user-select': 'none',
-      opacity: windowOpacity,
+      opacity: 1,
     }">
     <!-- @mouseenter="isSingleWindow ? setUnIgnoreMouseEvent() : undefined" @mouseleave="isSingleWindow ? setIgnoreMouseEvent() : undefined" -->
     <div @wheel.prevent="giftScroll" :style="{
         position: 'absolute',
         top: '0px',
         width: '100%',
-        height: `${giftLabels.length ? '36px' : '0px'}`,
+        height: `${headlines.length ? '36px' : '0px'}`,
       }">
       <div class="gift-show-content-wrapper" id="gift-show-content-wrapper">
         <transition-group name="fade">
-          <template v-for="gift in giftLabels">
+          <template v-for="gift in headlines">
             <!-- eslint-disable-next-line -->
             <div :key="gift.id" @mouseenter="hoverGift(gift.id)" @mouseleave="unhoverGift(gift.id)" class="gift-show-wrapper">
               <!-- <transition name="fade"> -->
@@ -95,7 +95,7 @@
         </transition-group>
       </div>
     </div>
-    <div class="message-content-wrapper" :style="{ top: `${gifts.length ? '36px' : '0px'}` }">
+    <div class="message-content-wrapper" :style="{ top: `${headlines.length ? '36px' : '0px'}` }">
       <div :style="{
           position: 'absolute',
           height: '100%',
@@ -194,6 +194,7 @@ export default {
       DEFAULT_AVATAR,
       giftGifMap: {},
       headlines: [],
+      PORT: 3000,
       showGiftCardThreshold: 0,
       combineSimilarTime: 3000,
       showHeadlineThreshold: 0, // 顶部礼物条
@@ -241,7 +242,7 @@ export default {
   computed: {
   },
   async mounted() {
-    const params = URLSearchParams(window.location.search)
+    const params = new URLSearchParams(window.location.search)
     this.isExample = params.get('example') || false
     this.giftGifMap = await getGiftConfig()
     this.init()
@@ -253,20 +254,19 @@ export default {
 
     ws.onmessage = (msg) => {
       const payload = JSON.parse(msg.data)
-
       if (payload.cmd === 'SETTING') {
         this.onSetting(payload.payload)
       }
-      if (payload.cmd === this.isExample ? 'EXAMPLE_COMMENT' : 'COMMENT') {
+      if (payload.cmd === (this.isExample ? 'EXAMPLE_COMMENT' : 'COMMENT')) {
         this.onComment(payload.payload)
       }
-      if (payload.cmd === this.isExample ? 'EXAMPLE_GIFT' : 'GIFT') {
+      if (payload.cmd === (this.isExample ? 'EXAMPLE_GIFT' : 'GIFT')) {
         this.onGift(payload.payload)
       }
-      if (payload.cmd === this.isExample ? 'EXAMPLE_INTERACT' : 'INTERACT') {
+      if (payload.cmd === (this.isExample ? 'EXAMPLE_INTERACT' : 'INTERACT')) {
         this.onInteract(payload.payload)
       }
-      if (payload.cmd === this.isExample ? 'EXAMPLE_SUPER_CHAT' : 'SUPER_CHAT') {
+      if (payload.cmd === (this.isExample ? 'EXAMPLE_SUPER_CHAT' : 'SUPER_CHAT')) {
         this.onSuperChat(payload.payload)
       }
     }
@@ -374,8 +374,8 @@ export default {
 
     async init() {
       const settings = await getSetting()
-      console.log(settings)
-      for (const key in settings) {
+      console.log(settings.data)
+      for (const key in settings.data) {
         this[key] = settings[key]
       }
     },

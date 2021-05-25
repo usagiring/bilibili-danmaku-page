@@ -7,7 +7,7 @@
       <div :style="{ display: 'inline-block', 'vertical-align': 'top' }">
         <Avatar :src="avatar" size="large" />
       </div>
-      <div :style="{ display: 'inline-block' }">
+      <div :style="{ display: 'inline-block', 'padding-left': '5px' }">
         <p>{{ name }}</p>
         <template v-if="isGuardGift">
           <p>
