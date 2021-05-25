@@ -178,7 +178,7 @@ import SimilarCommentBadge from "./SimilarCommentBadge";
 import GiftCard from "./GiftCard";
 import GiftCardMini from "./GiftCardMini";
 import FanMedal from "./FanMedal";
-import { getSetting, getGiftConfig } from '../service/api'
+import { init, getSetting, getGiftConfig } from '../service/api'
 
 export default {
   components: {
@@ -244,11 +244,13 @@ export default {
   async mounted() {
     const params = new URLSearchParams(window.location.search)
     this.isExample = params.get('example') || false
+    this.port = params.get('port') || 8081
+    init({ port: this.port })
     this.giftGifMap = await getGiftConfig()
     this.init()
 
     // PORT 来自 api/settings
-    const WS_URL = `ws://127.0.0.1:${this.PORT}`
+    const WS_URL = `ws://127.0.0.1:${this.port}`
     const ws = new WebSocket(WS_URL)
     ws.onopen = () => { }
 
