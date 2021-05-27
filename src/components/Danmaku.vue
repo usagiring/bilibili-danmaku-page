@@ -256,6 +256,7 @@ export default {
 
     ws.onmessage = (msg) => {
       const payload = JSON.parse(msg.data)
+      console.log(payload)
       if (payload.cmd === 'SETTING') {
         this.onSetting(payload.payload)
       }
@@ -291,10 +292,10 @@ export default {
     // TODO: 改成数组
     onComment(comment) {
       // if (payload)
-      comment.id = comment._id
+      comment.id = comment._id || comment.id
       comment.type = 'comment'
       comment.avatar = comment.avatar ? `${comment.avatar}@48w_48h` : DEFAULT_AVATAR
-      comment.role = comment.guard
+      comment.role = comment.guard || comment.role
 
       if (this.messages.length > MAX_MESSAGE) {
         this.messages.pop()
