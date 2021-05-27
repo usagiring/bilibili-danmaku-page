@@ -203,11 +203,7 @@ export default {
       isShowAvatar: true,
       isUseMiniGiftCard: false,
       danmakuFont: 'auto',
-      avatarSizeStyle: {
-        width: `12px`,
-        height: `12px`,
-        "line-height": `12px`,
-      },
+      avatarSize: 12,
       isExample: false,
       messages: [],
       message_lv0: {},
@@ -240,6 +236,13 @@ export default {
     };
   },
   computed: {
+    avatarSizeStyle() {
+      return {
+        width: `${this.avatarSize}px`,
+        height: `${this.avatarSize}px`,
+        "line-height": `${this.avatarSize}px`,
+      };
+    }
   },
   async mounted() {
     const params = new URLSearchParams(window.location.search)
@@ -284,6 +287,8 @@ export default {
   methods: {
     onSetting(payload) {
       console.log(payload)
+      console.log('showGiftCardThreshold', payload.showGiftCardThreshold)
+
       for (const key in payload) {
         this[key] = payload[key]
       }
@@ -309,12 +314,14 @@ export default {
       gift.avatar = gift.avatar ? `${gift.avatar}@48w_48h` : DEFAULT_AVATAR
       gift.sendAt = Date.now()
       // 
-      gift.totalPrice = gift.price * gift.giftNumber
+      gift.totalPrice = gift.price * gift.giftNumber || 0
       gift.priceProperties = getPriceProperties(gift.totalPrice) || {}
 
+console.log(gift.totalPrice, this.showGiftCardThreshold)
       if (!gift.totalPrice || gift.totalPrice > this.showGiftCardThreshold) {
         // 已存在的礼物覆盖，不存在的新增
         const existGift = this.messages.find(msg => msg.id === gift.id)
+        console.log(gift, existGift)
         if (existGift) {
           existGift.giftNumber = gift.giftNumber
           existGift.totalPrice = gift.price * gift.giftNumber
@@ -347,6 +354,8 @@ export default {
       superChat.type = 'superChat'
       superChat.avatar = superChat.avatar ? `${superChat.avatar}@48w_48h` : DEFAULT_AVATAR
       superChat.sendAt = Date.now()
+      superChat.totalPrice = superChat.price || 0
+      superChat.priceProperties = getPriceProperties(superChat.totalPrice) || {}
 
       if (this.messages.length > MAX_MESSAGE) {
         this.messages.pop()
@@ -354,6 +363,7 @@ export default {
       } else {
         this.messages = [superChat, ...this.messages]
       }
+      this.addToHeadline(superChat)
     },
 
     // 添加到礼物栏
@@ -371,10 +381,9 @@ export default {
     },
 
     async init() {
-      const settings = await getSetting()
-      console.log(settings.data)
-      for (const key in settings.data) {
-        this[key] = settings[key]
+      const { data } = await getSetting()
+      for (const key in data) {
+        this[key] = data[key]
       }
     },
 
@@ -385,7 +394,7 @@ export default {
       return this[`name_lv${message.role}`];
     },
     getCommentStyleByRole(message) {
-      return this[`comment_${message.role}`];
+      return this[`comment_lv${message.role}`];
     },
 
     parseMsgType(msgType) {
@@ -519,15 +528,6 @@ export default {
   white-space: normal;
 }
 
-.message-super-chat {
-  border-radius: 10px;
-  border: solid 1px rgba(66, 125, 158, 1);
-  margin: 5px;
-  overflow: hidden;
-}
-.message-super-chat-content {
-  padding: 10px;
-}
 .divider {
   border-top: 1px solid;
   width: 100%;
