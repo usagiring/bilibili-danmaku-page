@@ -17,7 +17,7 @@
       }">
       <div class="gift-show-content-wrapper" id="gift-show-content-wrapper">
         <transition-group name="fade">
-          <template v-for="gift in headlines">
+          <template v-for="gift of headlines">
             <!-- eslint-disable-next-line -->
             <div :key="gift.id" @mouseenter="hoverGift(gift.id)" @mouseleave="unhoverGift(gift.id)" class="gift-show-wrapper">
               <!-- <transition name="fade"> -->
@@ -256,7 +256,6 @@ export default {
 
     ws.onmessage = (msg) => {
       const payload = JSON.parse(msg.data)
-      console.log(payload)
       if (payload.cmd === 'SETTING') {
         this.onSetting(payload.payload)
       }
@@ -305,18 +304,15 @@ export default {
       }
     },
     onGift(gift) {
-      gift.id = gift._id
+      gift.id = gift._id || gift.id
       gift.type = 'gift'
       gift.avatar = gift.avatar ? `${gift.avatar}@48w_48h` : DEFAULT_AVATAR
       gift.sendAt = Date.now()
       // 
       gift.totalPrice = gift.price * gift.giftNumber
+      gift.priceProperties = getPriceProperties(gift.totalPrice) || {}
 
       if (!gift.totalPrice || gift.totalPrice > this.showGiftCardThreshold) {
-        Object.assign(gift, {
-          priceProperties: getPriceProperties(gift.totalPrice) || {},
-        });
-
         // 已存在的礼物覆盖，不存在的新增
         const existGift = this.messages.find(msg => msg.id === gift.id)
         if (existGift) {
@@ -334,7 +330,7 @@ export default {
       this.addToHeadline(gift)
     },
     onInteract(interact) {
-      interact.id = interact._id
+      interact.id = interact._id || interact.id
       interact.type = 'interactWord'
       interact.color = interact.nameColor
       interact.sendAt = interact.timestamp
@@ -347,7 +343,7 @@ export default {
       }
     },
     onSuperChat(superChat) {
-      superChat.id = superChat._id
+      superChat.id = superChat._id || superChat.id
       superChat.type = 'superChat'
       superChat.avatar = superChat.avatar ? `${superChat.avatar}@48w_48h` : DEFAULT_AVATAR
       superChat.sendAt = Date.now()
@@ -363,10 +359,9 @@ export default {
     // 添加到礼物栏
     addToHeadline(item) {
       if (item.totalPrice > this.showHeadlineThreshold) {
-        const item = Object.assign({
+        item = Object.assign({
           giftHover: true
         }, item)
-
         // 新加入高亮显示5s
         setTimeout(() => {
           item.giftHover = false
