@@ -1,6 +1,6 @@
 {
   "name": "@tokine/bilibili-danmaku-page",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "其妙 <hling51325@163.com>",
   "license": "MIT",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "prepublish": "npm run build",
-    "release": "cp package.json dist && cd dist && npm publish"
+    "release": "npm run build && cp package.json dist && cd dist && npm publish"
   },
   "dependencies": {
     "axios": "^0.21.1",
