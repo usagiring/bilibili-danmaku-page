@@ -8,7 +8,8 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "prepublish": "npm run build",
-    "release": "npm run build && cp package.json dist && cd dist && npm publish"
+    "release": "npm run build && cp package.json dist && cd dist && npm publish",
+    "link": "npm run build && cp package.json dist && cd dist && npm link"
   },
   "dependencies": {
     "axios": "^0.21.1",

@@ -261,7 +261,8 @@ export default {
     this.port = params.get('port') || 8081
 
     initAPI({ port: this.port })
-    this.giftGifMap = await getGiftConfig()
+    const { data: giftMap } = await getGiftConfig()
+    this.giftGifMap = giftMap
     this.getSetting()
 
     this.ws()
@@ -339,14 +340,14 @@ export default {
       }
 
       ws.onerror = (err) => {
-      //   ws = null
+        //   ws = null
         console.error(err)
-      //   console.log('onerror, reconnect...')
-      //   setTimeout(() => {
-      //     this.ws()
-      //     retryWaitTime = 3000
+        //   console.log('onerror, reconnect...')
+        //   setTimeout(() => {
+        //     this.ws()
+        //     retryWaitTime = 3000
 
-      //   }, retryWaitTime)
+        //   }, retryWaitTime)
       }
     },
     onSetting(payload) {
@@ -434,6 +435,15 @@ export default {
 
       this.addToHeadline(superChat)
 
+      // 某些场景下SC会推送两次信息，判断SuperChatId相同则不发送重复SC
+      const exists = this.messages.find(msg => msg.id === superChat.id)
+      if (exists) {
+        if (superChat.commentJPN) {
+          exists.commentJPN = superChat.commentJPN
+        }
+        return
+      }
+
       if (superChat.totalPrice < this.showGiftCardThreshold) return
       if (this.messages.length > MAX_MESSAGE) {
         this.messages.pop()
@@ -453,6 +463,7 @@ export default {
         exist.giftNumber = item.giftNumber
         exist.totalPrice = item.price * item.giftNumber
         exist.priceProperties = item.priceProperties
+        exist.commentJPN = item.commentJPN || exist.commentJPN
       } else {
         // 新加入高亮显示5s
         this.giftHover = [...this.giftHover, item.id]
