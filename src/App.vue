@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Danmaku/>
+    <Danmaku />
   </div>
 </template>
 
@@ -11,7 +11,7 @@ export default {
   name: 'App',
   components: {
     Danmaku
-  }
+  },
 }
 
 </script>

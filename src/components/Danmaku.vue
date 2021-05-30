@@ -1,169 +1,179 @@
 <template>
   <div :style="{
       position: 'absolute',
+      top: '0px',
+      bottom: '0px',
+      left: '0px',
+      right: '0px',
+      background: background,
+    }">
+    <div :style="{
+      position: 'absolute',
       top: '4px',
       bottom: '4px',
       left: '4px',
       right: '4px',
       '-webkit-user-select': 'none',
-      opacity: 1,
+      opacity: opacity,
     }">
-    <!-- @mouseenter="isSingleWindow ? setUnIgnoreMouseEvent() : undefined" @mouseleave="isSingleWindow ? setIgnoreMouseEvent() : undefined" -->
-    <div @wheel.prevent="giftScroll" :style="{
+      <!-- @mouseenter="isSingleWindow ? setUnIgnoreMouseEvent() : undefined" @mouseleave="isSingleWindow ? setIgnoreMouseEvent() : undefined" -->
+      <div @wheel.prevent="giftScroll" :style="{
         position: 'absolute',
         top: '0px',
         width: '100%',
         height: `${headlines.length ? '36px' : '0px'}`,
       }">
-      <div class="gift-show-content-wrapper" id="gift-show-content-wrapper">
-        <transition-group name="fade">
-          <template v-for="gift of headlines">
-            <!-- eslint-disable-next-line -->
-            <div :key="gift.id" @mouseenter="hoverGift(gift.id)" @mouseleave="unhoverGift(gift.id)" class="gift-show-wrapper">
-              <!-- <transition name="fade"> -->
-              <div :key="`${gift.id}_normal`" v-if="!giftHover.includes(gift.id)" class="gift-show-content" :style="{ background: gift.priceProperties.backgroundColor }">
-                <div :style="{
+        <div class="gift-show-content-wrapper" id="gift-show-content-wrapper">
+          <transition-group name="fade">
+            <template v-for="gift of headlines">
+              <!-- eslint-disable-next-line -->
+              <div :key="gift.id" @mouseenter="hoverGift(gift.id)" @mouseleave="unhoverGift(gift.id)" class="gift-show-wrapper">
+                <!-- <transition name="fade"> -->
+                <div :key="`${gift.id}_normal`" v-if="!giftHover.includes(gift.id)" class="gift-show-content" :style="{ background: gift.priceProperties.backgroundColor }">
+                  <div :style="{
                     'z-index': -1,
                     position: 'absolute',
                     width: `${widthCalculator(gift)}%`,
                     height: '100%',
                     background: gift.priceProperties.backgroundBottomColor,
                   }"></div>
-                <div :style="{
+                  <div :style="{
                     margin: '0 10px',
                     'font-weight': 'bold',
                     'z-index': 3,
                     '-webkit-text-stroke-width': '0.3px',
                     '-webkit-text-stroke-color': 'gray',
                   }">
-                  <Avatar :src="gift.avatar || DEFAULT_AVATAR" size="small" />
-                  <template v-if="gift.isGuardGift">
-                    <span>
-                      {{
+                    <Avatar :src="gift.avatar || DEFAULT_AVATAR" size="small" />
+                    <template v-if="gift.isGuardGift">
+                      <span>
+                        {{
                         gift.giftNumber === 1
                           ? `${gift.giftName}`
                           : `${gift.giftName}×${gift.giftNumber}`
                       }}
-                    </span>
-                  </template>
-                  <template v-else-if="gift.totalPrice">
-                    <span>{{ `￥${gift.totalPrice}` }}</span>
-                  </template>
+                      </span>
+                    </template>
+                    <template v-else-if="gift.totalPrice">
+                      <span>{{ `￥${gift.totalPrice}` }}</span>
+                    </template>
+                  </div>
                 </div>
-              </div>
-              <div :key="`${gift.id}_extend`" v-else class="gift-show-content-extend" :style="{
+                <div :key="`${gift.id}_extend`" v-else class="gift-show-content-extend" :style="{
                   border: `1px solid ${gift.priceProperties.backgroundBottomColor}`,
                 }">
-                <div class="gift-show-content-header" :style="{ background: gift.priceProperties.backgroundColor }">
-                  <Avatar class="gift-show-content-extend-avatar" :src="gift.avatar || DEFAULT_AVATAR" />
-                  <div :style="{ display: 'inline-block' }">
-                    <p>{{ gift.name }}</p>
-                    <template v-if="gift.isGuardGift">
-                      <p>
-                        {{
+                  <div class="gift-show-content-header" :style="{ background: gift.priceProperties.backgroundColor }">
+                    <Avatar class="gift-show-content-extend-avatar" :src="gift.avatar || DEFAULT_AVATAR" />
+                    <div :style="{ display: 'inline-block' }">
+                      <p>{{ gift.name }}</p>
+                      <template v-if="gift.isGuardGift">
+                        <p>
+                          {{
                           gift.giftNumber === 1
                             ? `${gift.giftName}`
                             : `${gift.giftName}×${gift.giftNumber}`
                         }}
-                      </p>
+                        </p>
+                      </template>
+                      <template v-else-if="gift.totalPrice">
+                        <p>{{ `￥${gift.totalPrice}` }}</p>
+                      </template>
+                    </div>
+                  </div>
+                  <div class="gift-show-content-extend-content" :style="{
+                    background: gift.priceProperties.backgroundBottomColor,
+                  }">
+                    <template v-if="gift.type === 'superChat'">
+                      {{ gift.comment }}
+                      <template v-if="gift.commentJPN">
+                        <div class="divider"></div>
+                        {{ gift.commentJPN }}
+                      </template>
                     </template>
-                    <template v-else-if="gift.totalPrice">
-                      <p>{{ `￥${gift.totalPrice}` }}</p>
+                    <template v-else>
+                      {{
+                      `${gift.name} 赠送了 ${gift.giftNumber} 个 ${gift.giftName}`
+                    }}
                     </template>
                   </div>
                 </div>
-                <div class="gift-show-content-extend-content" :style="{
-                    background: gift.priceProperties.backgroundBottomColor,
-                  }">
-                  <template v-if="gift.type === 'superChat'">
-                    {{ gift.comment }}
-                    <template v-if="gift.commentJPN">
-                      <div class="divider"></div>
-                      {{ gift.commentJPN }}
-                    </template>
-                  </template>
-                  <template v-else>
-                    {{
-                      `${gift.name} 赠送了 ${gift.giftNumber} 个 ${gift.giftName}`
-                    }}
-                  </template>
-                </div>
+                <!-- </transition> -->
               </div>
-              <!-- </transition> -->
-            </div>
-          </template>
-        </transition-group>
+            </template>
+          </transition-group>
+        </div>
       </div>
-    </div>
-    <div class="message-content-wrapper" :style="{ top: `${headlines.length ? '36px' : '0px'}` }">
-      <div :style="{
+      <div class="message-content-wrapper" :style="{ top: `${headlines.length ? '36px' : '0px'}` }">
+        <div :style="{
           position: 'absolute',
           height: '100%',
           width: '80%',
           '-webkit-app-region': 'drag',
         }"></div>
-      <div :style="{
+        <div :style="{
           position: 'absolute',
           height: '100%',
           width: '20%',
           right: '0',
         }"></div>
-      <transition-group name="fade" tag="div" class="message-content" :style="{ 'font-family': danmakuFont }">
-        <p :key="message.id" v-for="message in messages">
-          <template v-if="message.type === 'comment'">
-            <p :style="getMessageStyleByRole(message)">
-              <Avatar v-if="isShowAvatar" :src="message.avatar" :style="avatarSizeStyle" />
-              <i v-if="isShowMemberShipIcon && message.role" class="guard-icon" :style="{
+        <transition-group name="fade" tag="div" class="message-content" :style="{ 'font-family': danmakuFont }">
+          <p :key="message.id" v-for="message in messages">
+            <template v-if="message.type === 'comment'">
+              <p :style="getMessageStyleByRole(message)">
+                <Avatar v-if="isShowAvatar" :src="message.avatar" :style="avatarSizeStyle" />
+                <i v-if="isShowMemberShipIcon && message.role" class="guard-icon" :style="{
                   'background-image': `url(${getGuardIcon(message.role)})`,
                 }"></i>
-              <!-- v-bind="message" -->
-              <FanMedal v-if="isShowFanMedal && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
-              <span class="message-text" :style="getNameStyleByRole(message)">{{ message.name }}:</span>
-              <span class="message-text" :style="getCommentStyleByRole(message)">{{ message.comment }}</span>
-              <SimilarCommentBadge class="message-text" :style="{ 'margin-left': '5px' }" v-if="message.similar > 0" v-bind:number="message.similar" />
-            </p>
-          </template>
-          <template v-if="message.type === 'interactWord'">
-            <!-- 入场消息设置默认使用普通设置 -->
-            <p :style="getCommentStyleByRole({ role: 0 })">
-              <FanMedal v-if="isShowFanMedal && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
-              <span :style="{ color: message.color ? message.color : undefined }">{{ message.name }}</span>
-              {{ `${parseMsgType(message.msgType)}了直播间` }}
-            </p>
-          </template>
-          <template v-if="message.type === 'superChat'">
-            <GiftCard v-if="!isUseMiniGiftCard" v-bind="message">
-              <div :style="{ padding: '10px' }">
-                {{ message.comment }}
-                <template v-if="message.commentJPN">
-                  <div class="divider"></div>
-                  {{ message.commentJPN }}
-                </template>
-              </div>
-            </GiftCard>
-            <GiftCardMini v-else v-bind="message">{{
+                <!-- v-bind="message" -->
+                <FanMedal v-if="isShowFanMedal && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
+                <span class="message-text" :style="getNameStyleByRole(message)">{{ message.name }}:</span>
+                <span class="message-text" :style="getCommentStyleByRole(message)">{{ message.comment }}</span>
+                <SimilarCommentBadge class="message-text" :style="{ 'margin-left': '5px' }" v-if="message.similar > 0" v-bind:number="message.similar" />
+              </p>
+            </template>
+            <template v-if="message.type === 'interactWord'">
+              <!-- 入场消息设置默认使用普通设置 -->
+              <p :style="getCommentStyleByRole({ role: 0 })">
+                <FanMedal v-if="isShowFanMedal && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
+                <span :style="{ color: message.color ? message.color : undefined }">{{ message.name }}</span>
+                {{ `${parseMsgType(message.msgType)}了直播间` }}
+              </p>
+            </template>
+            <template v-if="message.type === 'superChat'">
+              <GiftCard v-if="!isUseMiniGiftCard" v-bind="message">
+                <div :style="{ padding: '10px' }">
+                  {{ message.comment }}
+                  <template v-if="message.commentJPN">
+                    <div class="divider"></div>
+                    {{ message.commentJPN }}
+                  </template>
+                </div>
+              </GiftCard>
+              <GiftCardMini v-else v-bind="message">{{
               `: ${message.comment}`
             }}</GiftCardMini>
-          </template>
-          <template v-if="message.type === 'gift'">
-            <GiftCard v-if="!isUseMiniGiftCard" v-bind="message">
-              <span :style="{
+            </template>
+            <template v-if="message.type === 'gift'">
+              <GiftCard v-if="!isUseMiniGiftCard" v-bind="message">
+                <span :style="{
                 display: 'inline-block',
                 padding: '10px 0px 10px 10px',
               }">{{
               `${message.name} 赠送了 ${message.giftNumber} 个 ${message.giftName}`
             }}</span>
-              <img :style="{ 'vertical-align': 'middle', width: '35px' }" :src="giftGifMap[message.giftId] && giftGifMap[message.giftId].webp">
-            </GiftCard>
-            <GiftCardMini v-else v-bind="message">{{
+                <img :style="{ 'vertical-align': 'middle', width: '35px' }" :src="giftGifMap[message.giftId] && giftGifMap[message.giftId].webp">
+              </GiftCard>
+              <GiftCardMini v-else v-bind="message">{{
               `: 赠送了 ${message.giftNumber}个 ${message.giftName}`
             }}
-            </GiftCardMini>
-          </template>
-        </p>
-      </transition-group>
+              </GiftCardMini>
+            </template>
+          </p>
+        </transition-group>
+      </div>
     </div>
   </div>
+
 </template>
 
 <script>
@@ -178,7 +188,10 @@ import SimilarCommentBadge from "./SimilarCommentBadge";
 import GiftCard from "./GiftCard";
 import GiftCardMini from "./GiftCardMini";
 import FanMedal from "./FanMedal";
-import { init, getSetting, getGiftConfig } from '../service/api'
+import { init as initAPI, getSetting, getGiftConfig, getExampleMessages } from '../service/api'
+
+let ws
+let retryWaitTime = 0
 
 export default {
   components: {
@@ -205,34 +218,27 @@ export default {
       danmakuFont: 'auto',
       avatarSize: 12,
       isExample: false,
+      background: 'rgba(0,0,0,0)',
+      opacity: 1,
       messages: [],
+      isShowInteractInfo: false,
+      isShowSilverGift: false,
+
       message_lv0: {},
-      name_lv0: {
-      },
-      comment_lv0: {
-      },
+      name_lv0: {},
+      comment_lv0: {},
 
-      message_lv3: {
-      },
-      name_lv3: {
-      },
-      comment_lv3: {
-      },
+      message_lv3: {},
+      name_lv3: {},
+      comment_lv3: {},
 
-      // 提督和总督暂时使用舰长配置
-      message_lv2: {
-      },
-      name_lv2: {
-      },
-      comment_lv2: {
-      },
+      message_lv2: {},
+      name_lv2: {},
+      comment_lv2: {},
 
-      message_lv1: {
-      },
-      name_lv1: {
-      },
-      comment_lv1: {
-      },
+      message_lv1: {},
+      name_lv1: {},
+      comment_lv1: {},
     };
   },
   computed: {
@@ -244,51 +250,106 @@ export default {
       };
     }
   },
+  beforeCreate() {
+    document
+      .getElementsByTagName("body")[0]
+      .setAttribute("style", "background-color:rgba(0,0,0,0);");
+  },
   async mounted() {
     const params = new URLSearchParams(window.location.search)
     this.isExample = params.get('example') || false
     this.port = params.get('port') || 8081
-    init({ port: this.port })
+
+    initAPI({ port: this.port })
     this.giftGifMap = await getGiftConfig()
-    this.init()
+    this.getSetting()
 
-    // PORT 来自 api/settings
-    const WS_URL = `ws://127.0.0.1:${this.port}`
-    const ws = new WebSocket(WS_URL)
-    ws.onopen = () => { }
+    this.ws()
 
-    ws.onmessage = (msg) => {
-      const payload = JSON.parse(msg.data)
-      if (payload.cmd === 'SETTING') {
-        this.onSetting(payload.payload)
-      }
-      if (payload.cmd === (this.isExample ? 'EXAMPLE_COMMENT' : 'COMMENT')) {
-        this.onComment(payload.payload)
-      }
-      if (payload.cmd === (this.isExample ? 'EXAMPLE_GIFT' : 'GIFT')) {
-        this.onGift(payload.payload)
-      }
-      if (payload.cmd === (this.isExample ? 'EXAMPLE_INTERACT' : 'INTERACT')) {
-        this.onInteract(payload.payload)
-      }
-      if (payload.cmd === (this.isExample ? 'EXAMPLE_SUPER_CHAT' : 'SUPER_CHAT')) {
-        this.onSuperChat(payload.payload)
-      }
-    }
+    setInterval(() => {
+      this.headlines = this.headlines
+        .map(headline => {
+          headline.existsTime = (headline.existsTime || 0) + 1000
+          return headline
+        })
+        .filter(headline => {
+          return headline.sendAt + headline.priceProperties.time > Date.now()
+        })
+    }, 1000)
 
-    ws.onclose = (code) => {
-      console.log('ws close: ', code)
-    }
-
-    ws.onerror = (err) => {
-      console.error(err)
+    if (this.isExample) {
+      this.initExampleMessage()
     }
   },
   methods: {
-    onSetting(payload) {
-      console.log(payload)
-      console.log('showGiftCardThreshold', payload.showGiftCardThreshold)
+    ws() {
+      const WS_URL = `ws://127.0.0.1:${this.port}`
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        console.log('connected..., nothing todo.')
+        return
+      }
+      if (ws && ws.readyState === WebSocket.CONNECTING) {
+        console.log('connecting..., nothing todo.')
+        return
+      }
 
+      ws = new WebSocket(WS_URL)
+      ws.onopen = () => {
+        console.log('onopen, connected...')
+        retryWaitTime = 0
+      }
+
+      ws.onmessage = (msg) => {
+        const payload = JSON.parse(msg.data)
+        if (payload.cmd === 'SETTING') {
+          this.onSetting(payload.payload)
+        }
+        if (payload.cmd === (this.isExample ? 'EXAMPLE_COMMENT' : 'COMMENT')) {
+          this.onComment(payload.payload)
+        }
+        if (payload.cmd === (this.isExample ? 'EXAMPLE_GIFT' : 'GIFT')) {
+          this.onGift(payload.payload)
+        }
+        if (payload.cmd === (this.isExample ? 'EXAMPLE_INTERACT' : 'INTERACT')) {
+          this.onInteract(payload.payload)
+        }
+        if (payload.cmd === (this.isExample ? 'EXAMPLE_SUPER_CHAT' : 'SUPER_CHAT')) {
+          this.onSuperChat(payload.payload)
+        }
+
+        if (payload.cmd === 'MESSAGE_CLEAR') {
+          this.clearMessages()
+        }
+
+        if (payload.cmd === 'EXAMPLE_MESSAGE_CLEAR') {
+          this.clearMessages()
+          this.initExampleMessage()
+        }
+      }
+
+      ws.onclose = (code) => {
+        ws = null
+        console.log('ws close: ', code)
+        console.log('onclose, reconnect...')
+        setTimeout(() => {
+          this.ws()
+          retryWaitTime = 3000
+
+        }, retryWaitTime)
+      }
+
+      ws.onerror = (err) => {
+      //   ws = null
+        console.error(err)
+      //   console.log('onerror, reconnect...')
+      //   setTimeout(() => {
+      //     this.ws()
+      //     retryWaitTime = 3000
+
+      //   }, retryWaitTime)
+      }
+    },
+    onSetting(payload) {
       for (const key in payload) {
         this[key] = payload[key]
       }
@@ -300,6 +361,20 @@ export default {
       comment.type = 'comment'
       comment.avatar = comment.avatar ? `${comment.avatar}@48w_48h` : DEFAULT_AVATAR
       comment.role = comment.guard || comment.role
+      comment.sendAt = comment.sendAt || Date.now()
+
+      if (this.combineSimilarTime) {
+        const reverseComments = this.messages.filter(msg => msg.type === 'comment')
+        for (const message of reverseComments) {
+          // 再之前的消息超过时间范围，直接跳出
+          if (message.sendAt < Date.now() - this.combineSimilarTime) break
+          if (message.comment === comment.comment) {
+            message.similar = (message.similar || 0) + 1
+            // * return
+            return
+          }
+        }
+      }
 
       if (this.messages.length > MAX_MESSAGE) {
         this.messages.pop()
@@ -309,6 +384,7 @@ export default {
       }
     },
     onGift(gift) {
+      if (!this.isShowSilverGift && gift.coinType !== 'gold') return
       gift.id = gift._id || gift.id
       gift.type = 'gift'
       gift.avatar = gift.avatar ? `${gift.avatar}@48w_48h` : DEFAULT_AVATAR
@@ -317,26 +393,25 @@ export default {
       gift.totalPrice = gift.price * gift.giftNumber || 0
       gift.priceProperties = getPriceProperties(gift.totalPrice) || {}
 
-console.log(gift.totalPrice, this.showGiftCardThreshold)
-      if (!gift.totalPrice || gift.totalPrice > this.showGiftCardThreshold) {
-        // 已存在的礼物覆盖，不存在的新增
-        const existGift = this.messages.find(msg => msg.id === gift.id)
-        console.log(gift, existGift)
-        if (existGift) {
-          existGift.giftNumber = gift.giftNumber
-          existGift.totalPrice = gift.price * gift.giftNumber
+      this.addToHeadline(gift)
+      if (gift.totalPrice < this.showGiftCardThreshold) return
+      // 已存在的礼物覆盖，不存在的新增
+      const existGift = this.messages.find(msg => msg.id === gift.id)
+      if (existGift) {
+        existGift.giftNumber = gift.giftNumber
+        existGift.totalPrice = gift.price * gift.giftNumber
+        existGift.priceProperties = gift.priceProperties
+      } else {
+        if (this.messages.length > MAX_MESSAGE) {
+          this.messages.pop()
+          this.messages = [gift, ...this.messages]
         } else {
-          if (this.messages.length > MAX_MESSAGE) {
-            this.messages.pop()
-            this.messages = [gift, ...this.messages]
-          } else {
-            this.messages = [gift, ...this.messages]
-          }
+          this.messages = [gift, ...this.messages]
         }
       }
-      this.addToHeadline(gift)
     },
     onInteract(interact) {
+      if (!this.isShowInteractInfo) return
       interact.id = interact._id || interact.id
       interact.type = 'interactWord'
       interact.color = interact.nameColor
@@ -357,44 +432,56 @@ console.log(gift.totalPrice, this.showGiftCardThreshold)
       superChat.totalPrice = superChat.price || 0
       superChat.priceProperties = getPriceProperties(superChat.totalPrice) || {}
 
+      this.addToHeadline(superChat)
+
+      if (superChat.totalPrice < this.showGiftCardThreshold) return
       if (this.messages.length > MAX_MESSAGE) {
         this.messages.pop()
         this.messages = [superChat, ...this.messages]
       } else {
         this.messages = [superChat, ...this.messages]
       }
-      this.addToHeadline(superChat)
     },
 
     // 添加到礼物栏
     addToHeadline(item) {
-      if (item.totalPrice > this.showHeadlineThreshold) {
-        item = Object.assign({
-          giftHover: true
-        }, item)
+      if (item.totalPrice < this.showHeadlineThreshold) return
+
+      // 已存在的礼物覆盖，不存在的新增
+      const exist = this.headlines.find(msg => msg.id === item.id)
+      if (exist) {
+        exist.giftNumber = item.giftNumber
+        exist.totalPrice = item.price * item.giftNumber
+        exist.priceProperties = item.priceProperties
+      } else {
         // 新加入高亮显示5s
+        this.giftHover = [...this.giftHover, item.id]
         setTimeout(() => {
-          item.giftHover = false
+          this.giftHover = this.giftHover.filter(hover => hover !== item.id)
         }, 5000);
         this.headlines = [item, ...this.headlines]
       }
     },
 
-    async init() {
+    async getSetting() {
       const { data } = await getSetting()
       for (const key in data) {
         this[key] = data[key]
       }
     },
 
+    // 提督和总督暂时使用舰长配置
     getMessageStyleByRole(message) {
-      return this[`message_lv${message.role}`];
+      const role = (message.role === 1 || message.role === 2) ? 3 : message.role
+      return this[`message_lv${role}`];
     },
     getNameStyleByRole(message) {
-      return this[`name_lv${message.role}`];
+      const role = (message.role === 1 || message.role === 2) ? 3 : message.role
+      return this[`name_lv${role}`];
     },
     getCommentStyleByRole(message) {
-      return this[`comment_lv${message.role}`];
+      const role = (message.role === 1 || message.role === 2) ? 3 : message.role
+      return this[`comment_lv${role}`];
     },
 
     parseMsgType(msgType) {
@@ -407,11 +494,9 @@ console.log(gift.totalPrice, this.showGiftCardThreshold)
     unhoverGift(giftId) {
       this.giftHover = this.giftHover.filter((id) => id !== giftId);
     },
-    widthCalculator(gift) {
-      if (Number(gift.existsTime) && Number(gift.priceProperties.time)) {
-        return Math.floor(
-          (1 - gift.existsTime / gift.priceProperties.time) * 100
-        );
+    widthCalculator(item) {
+      if (Number(item.existsTime) && Number(item.priceProperties.time)) {
+        return Math.floor((1 - item.existsTime / item.priceProperties.time) * 100)
       } else {
         return 100;
       }
@@ -424,6 +509,11 @@ console.log(gift.totalPrice, this.showGiftCardThreshold)
     // setUnIgnoreMouseEvent() {
     //   win.setIgnoreMouseEvents(false);
     // },
+    clearMessages() {
+      this.messages = []
+      this.headlines = []
+    },
+
     giftScroll(e) {
       const el = document.getElementById("gift-show-content-wrapper");
       el.scrollLeft += e.deltaY;
@@ -431,6 +521,24 @@ console.log(gift.totalPrice, this.showGiftCardThreshold)
     getGuardIcon(level) {
       return GUARD_ICON_MAP[level];
     },
+
+    async initExampleMessage() {
+      const { data: messages } = await getExampleMessages()
+      messages.forEach(msg => {
+        if (msg.cmd === 'EXAMPLE_COMMENT') {
+          this.onComment(msg.payload)
+        }
+        if (msg.cmd === 'EXAMPLE_GIFT') {
+          this.onGift(msg.payload)
+        }
+        if (msg.cmd === 'EXAMPLE_INTERACT') {
+          this.onInteract(msg.payload)
+        }
+        if (msg.cmd === 'EXAMPLE_SUPER_CHAT') {
+          this.onSuperChat(msg.payload)
+        }
+      })
+    }
   },
 }
 </script>
