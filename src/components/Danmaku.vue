@@ -55,7 +55,7 @@
                       </span>
                     </template>
                     <template v-else-if="gift.totalPrice">
-                      <span>{{ `￥${gift.totalPrice}` }}</span>
+                      <span>{{ `￥${Number(gift.totalPrice).toFixed(1)}` }}</span>
                     </template>
                   </div>
                 </div>
@@ -76,7 +76,7 @@
                         </p>
                       </template>
                       <template v-else-if="gift.totalPrice">
-                        <p>{{ `￥${gift.totalPrice}` }}</p>
+                        <p>{{ `￥${Number(gift.totalPrice).toFixed(1)}` }}</p>
                       </template>
                     </div>
                   </div>
