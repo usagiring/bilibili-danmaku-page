@@ -16,7 +16,7 @@
         }}</span>
       </template>
       <template v-else-if="totalPrice">
-        <span class="price-style">{{ `¥${totalPrice}` }}</span>
+        <span class="price-style">{{ `¥${Number.isSafeInteger(totalPrice) ? Number(totalPrice).toFixed(0) : Number(totalPrice).toFixed(1)}` }}</span>
       </template>
       <slot></slot>
     </div>
