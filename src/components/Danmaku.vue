@@ -55,7 +55,7 @@
                       </span>
                     </template>
                     <template v-else-if="gift.totalPrice">
-                      <span>{{ `￥${gift.totalPrice}` }}</span>
+                      <span>{{ `￥${Number.isSafeInteger(gift.totalPrice) ? Number(gift.totalPrice).toFixed(0) : Number(gift.totalPrice).toFixed(1)}` }}</span>
                     </template>
                   </div>
                 </div>
@@ -76,7 +76,7 @@
                         </p>
                       </template>
                       <template v-else-if="gift.totalPrice">
-                        <p>{{ `￥${gift.totalPrice}` }}</p>
+                        <p>{{ `￥${Number.isSafeInteger(gift.totalPrice) ? Number(gift.totalPrice).toFixed(0) : Number(gift.totalPrice).toFixed(1)}` }}</p>
                       </template>
                     </div>
                   </div>
@@ -326,7 +326,7 @@ export default {
           this.clearMessages()
         }
 
-        if (payload.cmd === 'EXAMPLE_MESSAGE_CLEAR') {
+        if (payload.cmd === 'EXAMPLE_MESSAGE_RESTORE' && this.isExample) {
           this.clearMessages()
           this.initExampleMessage()
         }
