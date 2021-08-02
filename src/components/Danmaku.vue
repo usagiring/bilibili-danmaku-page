@@ -127,6 +127,10 @@
                 <!-- v-bind="message" -->
                 <FanMedal v-if="isShowFanMedal && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
                 <span class="message-text" :style="getNameStyleByRole(message)">{{ message.name }}:</span>
+                <span v-if="message.voiceUrl" @click="playAudio(message.voiceUrl)" class="voice-container">
+                  <Icon type="md-play" />
+                  <span>{{ `${comment.fileDuration}"` }}</span>
+                </span>
                 <span class="message-text" :style="getCommentStyleByRole(message)">{{ message.comment }}</span>
                 <SimilarCommentBadge class="message-text" :style="{ 'margin-left': '5px' }" v-if="message.similar > 0" v-bind:number="message.similar" />
               </p>
@@ -549,6 +553,11 @@ export default {
           this.onSuperChat(msg.payload)
         }
       })
+    },
+
+    playAudio(url) {
+      const audio = new Audio(url)
+      audio.play()
     }
   },
 }
