@@ -45,12 +45,12 @@
                     '-webkit-text-stroke-color': 'gray',
                   }">
                     <Avatar :src="gift.avatar || DEFAULT_AVATAR" size="small" />
-                    <template v-if="gift.isGuardGift">
+                    <template v-if="gift.type === 2">
                       <span>
                         {{
-                        gift.giftNumber === 1
-                          ? `${gift.giftName}`
-                          : `${gift.giftName}×${gift.giftNumber}`
+                        gift.count === 1
+                          ? `${gift.name}`
+                          : `${gift.name}×${gift.count}`
                       }}
                       </span>
                     </template>
@@ -65,13 +65,13 @@
                   <div class="gift-show-content-header" :style="{ background: gift.priceProperties.backgroundColor }">
                     <Avatar class="gift-show-content-extend-avatar" :src="gift.avatar || DEFAULT_AVATAR" />
                     <div :style="{ display: 'inline-block' }">
-                      <p>{{ gift.name }}</p>
-                      <template v-if="gift.isGuardGift">
+                      <p>{{ gift.uname }}</p>
+                      <template v-if="gift.type === 2">
                         <p>
                           {{
-                          gift.giftNumber === 1
-                            ? `${gift.giftName}`
-                            : `${gift.giftName}×${gift.giftNumber}`
+                          gift.count === 1
+                            ? `${gift.name}`
+                            : `${gift.name}×${gift.count}`
                         }}
                         </p>
                       </template>
@@ -83,16 +83,16 @@
                   <div class="gift-show-content-extend-content" :style="{
                     background: gift.priceProperties.backgroundBottomColor,
                   }">
-                    <template v-if="gift.type === 'superChat'">
-                      {{ gift.comment }}
-                      <template v-if="gift.commentJPN">
+                    <template v-if="gift.type === 3">
+                      {{ gift.content }}
+                      <template v-if="gift.contentJPN">
                         <div class="divider"></div>
-                        {{ gift.commentJPN }}
+                        {{ gift.contentJPN }}
                       </template>
                     </template>
                     <template v-else>
                       {{
-                      `${gift.name} 赠送了 ${gift.giftNumber} 个 ${gift.giftName}`
+                      `${gift.uname} 赠送了 ${gift.count} 个 ${gift.name}`
                     }}
                     </template>
                   </div>
@@ -118,7 +118,7 @@
         }"></div>
         <transition-group name="fade" tag="div" class="message-content" :style="{ 'font-family': danmakuFont }">
           <p :key="message.id" v-for="message in messages">
-            <template v-if="message.type === 'comment'">
+            <template v-if="message.category === 'comment'">
               <p :style="getMessageStyleByRole(message)">
                 <Avatar v-if="isShowAvatar" :src="message.avatar" :style="avatarSizeStyle" />
                 <i v-if="isShowMemberShipIcon && message.role" class="guard-icon" :style="{
@@ -126,49 +126,49 @@
                 }"></i>
                 <!-- v-bind="message" -->
                 <FanMedal v-if="isShowFanMedal && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
-                <span class="message-text" :style="getNameStyleByRole(message)">{{ message.name }}:</span>
+                <span class="message-text" :style="getNameStyleByRole(message)">{{ message.uname }}:</span>
                 <span v-if="message.voiceUrl" @click="playAudio(message.voiceUrl)" class="voice-container">
                   <Icon type="md-play" />
                   <span>{{ `${comment.fileDuration}"` }}</span>
                 </span>
-                <span class="message-text" :style="getCommentStyleByRole(message)">{{ message.comment }}</span>
+                <span class="message-text" :style="getCommentStyleByRole(message)">{{ message.content }}</span>
                 <SimilarCommentBadge class="message-text" :style="{ 'margin-left': '5px' }" v-if="message.similar > 0" v-bind:number="message.similar" />
               </p>
             </template>
-            <template v-if="message.type === 'interactWord'">
+            <template v-if="message.category === 'interactWord'">
               <!-- 入场消息设置默认使用普通设置 -->
               <p :style="getCommentStyleByRole({ role: 0 })">
                 <FanMedal v-if="isShowFanMedal && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
-                <span :style="{ color: message.color ? message.color : undefined }">{{ message.name }}</span>
-                {{ `${parseMsgType(message.msgType)}了直播间` }}
+                <span :style="{ color: message.unameColor ? message.unameColor : undefined }">{{ message.uname }}</span>
+                {{ `${parseMsgType(message.type)}了直播间` }}
               </p>
             </template>
-            <template v-if="message.type === 'superChat'">
+            <template v-if="message.category === 'superChat'">
               <GiftCard v-if="!isUseMiniGiftCard" v-bind="message">
                 <div :style="{ padding: '10px' }">
-                  {{ message.comment }}
-                  <template v-if="message.commentJPN">
+                  {{ message.content }}
+                  <template v-if="message.contentJPN">
                     <div class="divider"></div>
-                    {{ message.commentJPN }}
+                    {{ message.contentJPN }}
                   </template>
                 </div>
               </GiftCard>
               <GiftCardMini v-else v-bind="message">{{
-              `: ${message.comment}`
+              `: ${message.content}`
             }}</GiftCardMini>
             </template>
-            <template v-if="message.type === 'gift'">
+            <template v-if="message.category === 'gift'">
               <GiftCard v-if="!isUseMiniGiftCard" v-bind="message">
                 <span :style="{
                 display: 'inline-block',
                 padding: '10px 0px 10px 10px',
               }">{{
-              `${message.name} 赠送了 ${message.giftNumber} 个 ${message.giftName}`
+              `${message.uname} 赠送了 ${message.count} 个 ${message.name}`
             }}</span>
-                <img :style="{ 'vertical-align': 'middle', width: '35px' }" :src="giftGifMap[message.giftId] && giftGifMap[message.giftId].webp">
+                <img :style="{ 'vertical-align': 'middle', width: '35px' }" :src="giftGifMap[message.id] && giftGifMap[message.id].webp">
               </GiftCard>
               <GiftCardMini v-else v-bind="message">{{
-              `: 赠送了 ${message.giftNumber}个 ${message.giftName}`
+              `: 赠送了 ${message.count}个 ${message.name}`
             }}
               </GiftCardMini>
             </template>
@@ -359,21 +359,19 @@ export default {
         this[key] = payload[key]
       }
     },
-    // TODO: 改成数组
     onComment(comment) {
-      // if (payload)
       comment.id = comment._id || comment.id
-      comment.type = 'comment'
+      comment.category = 'comment'
       comment.avatar = comment.avatar ? `${comment.avatar}@48w_48h` : DEFAULT_AVATAR
       comment.role = comment.guard || comment.role
       comment.sendAt = comment.sendAt || Date.now()
 
       if (this.combineSimilarTime) {
-        const reverseComments = this.messages.filter(msg => msg.type === 'comment')
+        const reverseComments = this.messages.filter(msg => msg.category === 'comment')
         for (const message of reverseComments) {
           // 再之前的消息超过时间范围，直接跳出
           if (message.sendAt < Date.now() - this.combineSimilarTime) break
-          if (message.comment === comment.comment) {
+          if (message.content === comment.content) {
             message.similar = (message.similar || 0) + 1
             // * return
             return
@@ -389,13 +387,13 @@ export default {
       }
     },
     onGift(gift) {
-      if (!this.isShowSilverGift && gift.coinType !== 'gold') return
+      if (!this.isShowSilverGift && gift.coinType !== 1) return
       gift.id = gift._id || gift.id
-      gift.type = 'gift'
+      gift.category = 'gift'
       gift.avatar = gift.avatar ? `${gift.avatar}@48w_48h` : DEFAULT_AVATAR
       gift.sendAt = Date.now()
       // 
-      gift.totalPrice = gift.price * gift.giftNumber || 0
+      gift.totalPrice = gift.price * gift.count || 0
       gift.priceProperties = getPriceProperties(gift.totalPrice) || {}
 
       this.addToHeadline(gift)
@@ -403,7 +401,7 @@ export default {
       // 已存在的礼物覆盖，不存在的新增
       const existGift = this.messages.find(msg => msg.id === gift.id)
       if (existGift) {
-        existGift.giftNumber = gift.giftNumber
+        existGift.count = gift.count
         existGift.totalPrice = gift.price * gift.giftNumber
         existGift.priceProperties = gift.priceProperties
       } else {
@@ -418,9 +416,7 @@ export default {
     onInteract(interact) {
       if (!this.isShowInteractInfo) return
       interact.id = interact._id || interact.id
-      interact.type = 'interactWord'
-      interact.color = interact.nameColor
-      interact.sendAt = interact.timestamp
+      interact.category = 'interactWord'
 
       if (this.messages.length > MAX_MESSAGE) {
         this.messages.pop()
@@ -431,7 +427,7 @@ export default {
     },
     onSuperChat(superChat) {
       superChat.id = superChat._id || superChat.id
-      superChat.type = 'superChat'
+      superChat.category = 'superChat'
       superChat.avatar = superChat.avatar ? `${superChat.avatar}@48w_48h` : DEFAULT_AVATAR
       superChat.sendAt = Date.now()
       superChat.totalPrice = superChat.price || 0
@@ -442,8 +438,8 @@ export default {
       // 某些场景下SC会推送两次信息，判断SuperChatId相同则不发送重复SC
       const exists = this.messages.find(msg => msg.id === superChat.id)
       if (exists) {
-        if (superChat.commentJPN) {
-          exists.commentJPN = superChat.commentJPN
+        if (superChat.contentJPN) {
+          exists.contentJPN = superChat.contentJPN
         }
         return
       }
@@ -464,10 +460,10 @@ export default {
       // 已存在的礼物覆盖，不存在的新增
       const exist = this.headlines.find(msg => msg.id === item.id)
       if (exist) {
-        exist.giftNumber = item.giftNumber
-        exist.totalPrice = item.price * item.giftNumber
+        exist.count = item.count
+        exist.totalPrice = item.price * item.count
         exist.priceProperties = item.priceProperties
-        exist.commentJPN = item.commentJPN || exist.commentJPN
+        exist.contentJPN = item.contentJPN || exist.contentJPN
       } else {
         // 新加入高亮显示5s
         this.giftHover = [...this.giftHover, item.id]
@@ -499,8 +495,8 @@ export default {
       return this[`comment_lv${role}`];
     },
 
-    parseMsgType(msgType) {
-      return INTERACT_TYPE[msgType];
+    parseMsgType(type) {
+      return INTERACT_TYPE[type];
     },
 
     hoverGift(giftId) {
