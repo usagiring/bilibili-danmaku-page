@@ -27,9 +27,9 @@
           <transition-group name="fade">
             <template v-for="gift of headlines">
               <!-- eslint-disable-next-line -->
-              <div :key="gift.id" @mouseenter="hoverGift(gift.id)" @mouseleave="unhoverGift(gift.id)" class="gift-show-wrapper">
+              <div :key="gift._id" @mouseenter="hoverGift(gift._id)" @mouseleave="unhoverGift(gift._id)" class="gift-show-wrapper">
                 <!-- <transition name="fade"> -->
-                <div :key="`${gift.id}_normal`" v-if="!giftHover.includes(gift.id)" class="gift-show-content" :style="{ background: gift.priceProperties.backgroundColor }">
+                <div :key="`${gift._id}_normal`" v-if="!giftHover.includes(gift._id)" class="gift-show-content" :style="{ background: gift.priceProperties.backgroundColor }">
                   <div :style="{
                     'z-index': -1,
                     position: 'absolute',
@@ -59,7 +59,7 @@
                     </template>
                   </div>
                 </div>
-                <div :key="`${gift.id}_extend`" v-else class="gift-show-content-extend" :style="{
+                <div :key="`${gift._id}_extend`" v-else class="gift-show-content-extend" :style="{
                   border: `1px solid ${gift.priceProperties.backgroundBottomColor}`,
                 }">
                   <div class="gift-show-content-header" :style="{ background: gift.priceProperties.backgroundColor }">
@@ -117,7 +117,7 @@
           right: '0',
         }"></div>
         <transition-group name="fade" tag="div" class="message-content" :style="{ 'font-family': danmakuFont }">
-          <p :key="message.id" v-for="message in messages">
+          <p :key="message._id" v-for="message in messages">
             <template v-if="message.category === 'comment'">
               <p :style="getMessageStyleByRole(message)">
                 <Avatar v-if="isShowAvatar" :src="message.avatar" :style="avatarSizeStyle" />
@@ -361,7 +361,6 @@ export default {
       }
     },
     onComment(comment) {
-      comment.id = comment._id || comment.id
       comment.category = 'comment'
       comment.avatar = comment.avatar ? `${comment.avatar}@48w_48h` : DEFAULT_AVATAR
       comment.role = comment.guard || comment.role
@@ -389,7 +388,6 @@ export default {
     },
     onGift(gift) {
       if (!this.isShowSilverGift && gift.coinType !== 1) return
-      gift.id = gift._id || gift.id
       gift.category = 'gift'
       gift.avatar = gift.avatar ? `${gift.avatar}@48w_48h` : DEFAULT_AVATAR
       gift.sendAt = Date.now()
@@ -400,7 +398,7 @@ export default {
       this.addToHeadline(gift)
       if (gift.totalPrice < this.showGiftCardThreshold) return
       // 已存在的礼物覆盖，不存在的新增
-      const existGift = this.messages.find(msg => msg.id === gift.id)
+      const existGift = this.messages.find(msg => msg._id === gift._id)
       if (existGift) {
         existGift.count = gift.count
         existGift.totalPrice = gift.price * gift.giftNumber
@@ -416,7 +414,6 @@ export default {
     },
     onInteract(interact) {
       if (!this.isShowInteractInfo) return
-      interact.id = interact._id || interact.id
       interact.category = 'interactWord'
 
       if (this.messages.length > MAX_MESSAGE) {
@@ -427,7 +424,6 @@ export default {
       }
     },
     onSuperChat(superChat) {
-      superChat.id = superChat._id || superChat.id
       superChat.category = 'superChat'
       superChat.avatar = superChat.avatar ? `${superChat.avatar}@48w_48h` : DEFAULT_AVATAR
       superChat.sendAt = Date.now()
@@ -437,7 +433,7 @@ export default {
       this.addToHeadline(superChat)
 
       // 某些场景下SC会推送两次信息，判断SuperChatId相同则不发送重复SC
-      const exists = this.messages.find(msg => msg.id === superChat.id)
+      const exists = this.messages.find(msg => msg._id === superChat._id)
       if (exists) {
         if (superChat.contentJPN) {
           exists.contentJPN = superChat.contentJPN
@@ -459,7 +455,7 @@ export default {
       if (item.totalPrice < this.showHeadlineThreshold) return
 
       // 已存在的礼物覆盖，不存在的新增
-      const exist = this.headlines.find(msg => msg.id === item.id)
+      const exist = this.headlines.find(msg => msg._id === item._id)
       if (exist) {
         exist.count = item.count
         exist.totalPrice = item.price * item.count
@@ -467,9 +463,9 @@ export default {
         exist.contentJPN = item.contentJPN || exist.contentJPN
       } else {
         // 新加入高亮显示5s
-        this.giftHover = [...this.giftHover, item.id]
+        this.giftHover = [...this.giftHover, item._id]
         setTimeout(() => {
-          this.giftHover = this.giftHover.filter(hover => hover !== item.id)
+          this.giftHover = this.giftHover.filter(hover => hover !== item._id)
         }, 5000);
         this.headlines = [item, ...this.headlines]
       }
