@@ -131,7 +131,8 @@
                   <Icon type="md-play" />
                   <span>{{ `${comment.fileDuration}"` }}</span>
                 </span>
-                <span class="message-text" :style="getCommentStyleByRole(message)">{{ message.content }}</span>
+                <img v-if="message.emojiUrl" :style="{ 'vertical-align': 'middle', height: '24px' }" :src="message.emojiUrl" />
+                <span v-else class="message-text" :style="getCommentStyleByRole(message)">{{ message.content }}</span>
                 <SimilarCommentBadge class="message-text" :style="{ 'margin-left': '5px' }" v-if="message.similar > 0" v-bind:number="message.similar" />
               </p>
             </template>
