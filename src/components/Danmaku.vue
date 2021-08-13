@@ -401,7 +401,7 @@ export default {
       const existGift = this.messages.find(msg => msg._id === gift._id)
       if (existGift) {
         existGift.count = gift.count
-        existGift.totalPrice = gift.price * gift.giftNumber
+        existGift.totalPrice = gift.price * (existGift.count || 1)
         existGift.priceProperties = gift.priceProperties
       } else {
         if (this.messages.length > MAX_MESSAGE) {
