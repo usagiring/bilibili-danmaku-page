@@ -121,12 +121,12 @@
             <template v-if="message.category === 'comment'">
               <span :class="!isBorderAdaptContent? 'max-width': ''" class="border-image-default" :style="{ ...borderImageStyle, ...getMessageStyleByRole(message)}">
                 <template v-for="(setting, index) of messageSettings">
-                  <Avatar :key="index" v-show="setting.type==='avatar' && setting.isShow" :src="message.avatar" :style="avatarSizeStyle" />
-                  <i :key="index" v-show="setting.type==='guard' && setting.isShow && message.role" class="guard-icon" :style="{'background-image': `url(${getGuardIcon(message.role)})`}"></i>
-                  <FanMedal :key="index" v-show="setting.type==='medal' && setting.isShow && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
-                  <span :key="index" v-show="setting.type==='name'" class="is-vertical-align" :style="{...fontStyle, ...getNameStyleByRole(message)}">{{ message.uname }}</span>
-                  <span :key="index" v-show="setting.type==='colon' && setting.isShow" class="is-vertical-align" :style="{...fontStyle, ...getNameStyleByRole(message)}">：</span>
-                  <span :key="index" v-show="setting.type==='comment'">
+                  <Avatar :key="index" v-if="setting.type==='avatar' && setting.isShow" :src="message.avatar" :style="avatarSizeStyle" />
+                  <i :key="index" v-if="setting.type==='guard' && setting.isShow && message.role" class="guard-icon" :style="{'background-image': `url(${getGuardIcon(message.role)})`}"></i>
+                  <FanMedal :key="index" v-if="setting.type==='medal' && setting.isShow && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
+                  <span :key="index" v-if="setting.type==='name'" class="is-vertical-align" :style="{...fontStyle, ...getNameStyleByRole(message)}">{{ message.uname }}</span>
+                  <span :key="index" v-if="setting.type==='colon' && setting.isShow" class="is-vertical-align" :style="{...fontStyle, ...getNameStyleByRole(message)}">：</span>
+                  <span :key="index" v-if="setting.type==='comment'">
                     <img v-if="message.emojiUrl" :style="{ 'vertical-align': 'middle', height: '24px' }" :src="message.emojiUrl" />
                     <span v-else class="is-vertical-align" :style="{...fontStyle, ...getCommentStyleByRole(message)}">{{ message.content }}</span>
                     <span v-if="message.voiceUrl" @click="playAudio(message.voiceUrl)" class="voice-container">
