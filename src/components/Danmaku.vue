@@ -720,5 +720,6 @@ export default {
   border-style: solid;
   border-color: transparent;
   display: inline-block;
+  border-width: 0px;
 }
 </style>
