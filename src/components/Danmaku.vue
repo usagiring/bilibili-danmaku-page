@@ -17,7 +17,7 @@
       opacity: opacity,
     }">
       <!-- @mouseenter="isSingleWindow ? setUnIgnoreMouseEvent() : undefined" @mouseleave="isSingleWindow ? setIgnoreMouseEvent() : undefined" -->
-      <div @wheel.prevent="giftScroll" :style="{
+      <div v-if="isShowHeadline" @wheel.prevent="giftScroll" :style="{
         position: 'absolute',
         top: '0px',
         width: '100%',
@@ -103,7 +103,7 @@
           </transition-group>
         </div>
       </div>
-      <div class="message-content-wrapper" :style="{ top: `${headlines.length ? '36px' : '0px'}` }">
+      <div class="message-content-wrapper" :style="{ top: `${headlines.length && isShowHeadline ? '36px' : '0px'}` }">
         <div :style="{
           position: 'absolute',
           height: '100%',
@@ -116,25 +116,28 @@
           width: '20%',
           right: '0',
         }"></div>
-        <transition-group name="fade" tag="div" class="message-content" :style="{ 'font-family': danmakuFont }">
+        <transition-group name="fade" tag="div" class="message-content">
           <p :key="message._id" v-for="message in messages">
             <template v-if="message.category === 'comment'">
-              <p :style="getMessageStyleByRole(message)">
-                <Avatar v-if="isShowAvatar" :src="message.avatar" :style="avatarSizeStyle" />
-                <i v-if="isShowMemberShipIcon && message.role" class="guard-icon" :style="{
-                  'background-image': `url(${getGuardIcon(message.role)})`,
-                }"></i>
+              <span :class="!isBorderAdaptContent? 'max-width': ''" class="border-image-default" :style="{ ...borderImageStyle, ...getMessageStyleByRole(message)}">
+                <template v-for="(setting, index) of messageSettings">
+                  <Avatar :key="index" v-show="setting.type==='avatar' && setting.isShow" :src="message.avatar" :style="avatarSizeStyle" />
+                  <i :key="index" v-show="setting.type==='guard' && setting.isShow && message.role" class="guard-icon" :style="{'background-image': `url(${getGuardIcon(message.role)})`}"></i>
+                  <FanMedal :key="index" v-show="setting.type==='medal' && setting.isShow && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
+                  <span :key="index" v-show="setting.type==='name'" class="is-vertical-align" :style="{...fontStyle, ...getNameStyleByRole(message)}">{{ message.uname }}</span>
+                  <span :key="index" v-show="setting.type==='colon' && setting.isShow" class="is-vertical-align" :style="{...fontStyle, ...getNameStyleByRole(message)}">：</span>
+                  <span :key="index" v-show="setting.type==='comment'">
+                    <img v-if="message.emojiUrl" :style="{ 'vertical-align': 'middle', height: '24px' }" :src="message.emojiUrl" />
+                    <span v-else class="is-vertical-align" :style="{...fontStyle, ...getCommentStyleByRole(message)}">{{ message.content }}</span>
+                    <span v-if="message.voiceUrl" @click="playAudio(message.voiceUrl)" class="voice-container">
+                      <Icon type="md-play" />
+                      <span>{{ `${comment.fileDuration}"` }}</span>
+                    </span>
+                  </span>
+                </template>
                 <!-- v-bind="message" -->
-                <FanMedal v-if="isShowFanMedal && message.medalLevel && message.medalName" :medalLevel="message.medalLevel" :medalName="message.medalName" :medalColorStart="message.medalColorStart" :medalColorEnd="message.medalColorEnd" :medalColorBorder="message.medalColorBorder"></FanMedal>
-                <span class="message-text" :style="getNameStyleByRole(message)">{{ message.uname }}:</span>
-                <span v-if="message.voiceUrl" @click="playAudio(message.voiceUrl)" class="voice-container">
-                  <Icon type="md-play" />
-                  <span>{{ `${comment.fileDuration}"` }}</span>
-                </span>
-                <img v-if="message.emojiUrl" :style="{ 'vertical-align': 'middle', height: '24px' }" :src="message.emojiUrl" />
-                <span v-else class="message-text" :style="getCommentStyleByRole(message)">{{ message.content }}</span>
-                <SimilarCommentBadge class="message-text" :style="{ 'margin-left': '5px' }" v-if="message.similar > 0" v-bind:number="message.similar" />
-              </p>
+                <SimilarCommentBadge class="is-vertical-align" :style="{ 'margin-left': '5px' }" v-if="message.similar > 0" v-bind:number="message.similar" />
+              </span>
             </template>
             <template v-if="message.category === 'interactWord'">
               <!-- 入场消息设置默认使用普通设置 -->
@@ -228,6 +231,11 @@ export default {
       messages: [],
       isShowInteractInfo: false,
       isShowSilverGift: false,
+      isShowHeadline: true,
+      fontWeight: 'normal',
+      hiddenExpiredTime: 0,
+      messageSettings: [],
+      borderImages: [],
 
       message_lv0: {},
       name_lv0: {},
@@ -253,6 +261,29 @@ export default {
         height: `${this.avatarSize}px`,
         "line-height": `${this.avatarSize}px`,
       };
+    },
+    borderImageStyle() {
+      const image = this.borderImages.find(image => image.isSelected)
+      if (!image) return {}
+      return {
+        'border-width': `${image['border-width']}px`,
+        'border-image-width': image['border-image-width'],
+        'border-image-repeat': image['border-image-repeat'],
+        'border-image-slice': image['border-image-slice'],
+        'border-image-outset': image['border-image-outset'],
+        'border-image-source': `url(${image.dataUrl})`
+      }
+    },
+    isBorderAdaptContent() {
+      const image = this.borderImages.find(image => image.isSelected)
+      if (!image) return false
+      return image.isAdaptContent
+    },
+    fontStyle() {
+      return {
+        'font-family': this.danmakuFont,
+        'font-weight': this.fontWeight,
+      }
     }
   },
   beforeCreate() {
@@ -282,6 +313,14 @@ export default {
           return headline.sendAt + headline.priceProperties.time > Date.now()
         })
     }, 1000)
+
+    setInterval(() => {
+      if (!this.hiddenExpiredTime) return
+      this.messages = this.messages
+        .filter(message => {
+          return message.sendAt + this.hiddenExpiredTime > Date.now()
+        })
+    }, 2000)
 
     if (this.isExample) {
       this.initExampleMessage()
@@ -663,15 +702,23 @@ export default {
   background-size: contain;
   background-repeat: no-repeat;
 }
-.message-text {
+.is-vertical-align {
   vertical-align: middle;
 }
 
+.max-width {
+  width: 100%;
+}
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
+}
+.border-image-default {
+  border-style: solid;
+  border-color: transparent;
+  display: inline-block;
 }
 </style>
