@@ -236,6 +236,9 @@ export default {
       hiddenExpiredTime: 0,
       messageSettings: [],
       borderImages: [],
+      isShowType1: true,
+      isShowType2: true,
+      isShowSuperChatJPN: true,
 
       message_lv0: {},
       name_lv0: {},
@@ -404,6 +407,12 @@ export default {
       comment.avatar = comment.avatar ? `${comment.avatar}@48w_48h` : DEFAULT_AVATAR
       comment.role = comment.guard || comment.role
       comment.sendAt = comment.sendAt || Date.now()
+      if (comment.type === 1 && !this.isShowType1) {
+        return
+      }
+      if (comment.type === 2 && !this.isShowType2) {
+        return
+      }
 
       if (this.combineSimilarTime) {
         const reverseComments = this.messages.filter(msg => msg.category === 'comment')
@@ -474,7 +483,7 @@ export default {
       // 某些场景下SC会推送两次信息，判断SuperChatId相同则不发送重复SC
       const exists = this.messages.find(msg => msg._id === superChat._id)
       if (exists) {
-        if (superChat.contentJPN) {
+        if (superChat.contentJPN && this.isShowSuperChatJPN) {
           exists.contentJPN = superChat.contentJPN
         }
         return
@@ -724,7 +733,7 @@ export default {
   display: inline-block;
   border-width: 0px;
 }
-.margin-lr-1px { 
+.margin-lr-1px {
   margin: 0 1px;
 }
 </style>
