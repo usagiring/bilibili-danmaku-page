@@ -85,7 +85,7 @@
                   }">
                     <template v-if="gift.type === 3">
                       {{ gift.content }}
-                      <template v-if="gift.contentJPN">
+                      <template v-if="gift.contentJPN && isShowSuperChatJPN">
                         <div class="divider"></div>
                         {{ gift.contentJPN }}
                       </template>
@@ -151,7 +151,7 @@
               <GiftCard v-if="!isUseMiniGiftCard" v-bind="message">
                 <div :style="{ padding: '10px' }">
                   {{ message.content }}
-                  <template v-if="message.contentJPN">
+                  <template v-if="message.contentJPN && isShowSuperChatJPN">
                     <div class="divider"></div>
                     {{ message.contentJPN }}
                   </template>
@@ -483,7 +483,7 @@ export default {
       // 某些场景下SC会推送两次信息，判断SuperChatId相同则不发送重复SC
       const exists = this.messages.find(msg => msg._id === superChat._id)
       if (exists) {
-        if (superChat.contentJPN && this.isShowSuperChatJPN) {
+        if (superChat.contentJPN) {
           exists.contentJPN = superChat.contentJPN
         }
         return
