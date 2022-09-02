@@ -219,9 +219,7 @@ export default {
       showGiftCardThreshold: 0,
       combineSimilarTime: 3000,
       showHeadlineThreshold: 0, // 顶部礼物条
-      isShowMemberShipIcon: true,
       isShowFanMedal: true,
-      isShowAvatar: true,
       isUseMiniGiftCard: false,
       danmakuFont: 'auto',
       avatarSize: 12,
